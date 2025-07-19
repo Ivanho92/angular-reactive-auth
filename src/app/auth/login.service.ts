@@ -1,11 +1,10 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
-import { connect } from 'ngxtension/connect';
-import { EMPTY, Subject, switchMap } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { computed, inject, Injectable, signal } from "@angular/core";
+import { connect } from "ngxtension/connect";
+import { map, Subject } from "rxjs";
 import { Credentials } from "./auth.model";
 import { AuthService } from "./auth.service";
 
-export type LoginStatus = 'pending' | 'authenticating' | 'success' | 'error';
+export type LoginStatus = "pending" | "authenticating" | "success" | "error";
 
 interface LoginState {
   status: LoginStatus;
@@ -20,19 +19,14 @@ export class LoginService {
   login$ = new Subject<Credentials>();
 
   userAuthenticated$ = this.login$.pipe(
-    switchMap((credentials) =>
-      this.authService.login(credentials.email, credentials.password).pipe(
-        catchError((err) => {
-          this.error$.next(err);
-          return EMPTY;
-        }),
-      ),
+    map((credentials) =>
+      this.authService.login(credentials.email, credentials.password),
     ),
   );
 
   // state
   private readonly state = signal<LoginState>({
-    status: 'pending',
+    status: "pending",
   });
 
   // selectors
@@ -41,8 +35,8 @@ export class LoginService {
   constructor() {
     // reducers
     connect(this.state)
-      .with(this.userAuthenticated$, () => ({ status: 'success' }))
-      .with(this.login$, () => ({ status: 'authenticating' }))
-      .with(this.error$, () => ({ status: 'error' }));
+      .with(this.userAuthenticated$, () => ({ status: "success" }))
+      .with(this.login$, () => ({ status: "authenticating" }))
+      .with(this.error$, () => ({ status: "error" }));
   }
 }

@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
+import { toObservable } from "@angular/core/rxjs-interop";
 import { jwtDecode } from "jwt-decode";
 import { connect } from "ngxtension/connect";
-import { from } from "rxjs";
 import { AUTH_PROVIDER } from "../common/injection-tokens";
 import { AuthPayload, UserRole } from "./auth.model";
 
@@ -20,7 +20,7 @@ export class AuthService {
   private readonly authProvider = inject(AUTH_PROVIDER);
 
   // sources
-  private readonly token$ = this.authProvider.token$;
+  private readonly token$ = toObservable(this.authProvider.token);
 
   // state
   readonly state = signal<AuthState>(DEFAULT_STATE);
@@ -36,11 +36,11 @@ export class AuthService {
   }
 
   login(email: string, password: string) {
-    return from(this.authProvider.login(email, password));
+    return this.authProvider.login$.next({ email, password });
   }
 
   logout() {
-    void this.authProvider.logout();
+    this.authProvider.logout$.next(null);
   }
 
   decodeToken(token: string | null) {

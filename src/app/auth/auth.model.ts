@@ -1,12 +1,13 @@
+import { Signal } from "@angular/core";
 import { JwtPayload } from "jwt-decode";
-import { Observable } from "rxjs";
+import { Subject } from "rxjs";
 
 export type UserRole = "manager" | "admin";
 
 export interface AuthProvider {
-  token$: Observable<string | null>;
-  login(email: string, _password: string): Promise<string>;
-  logout(): Promise<void>;
+  login$: Subject<Credentials>;
+  logout$: Subject<null>;
+  token: Signal<string | null>;
 }
 
 export interface Credentials {

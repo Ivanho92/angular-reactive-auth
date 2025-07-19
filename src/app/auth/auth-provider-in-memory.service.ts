@@ -1,14 +1,40 @@
-import { Injectable } from "@angular/core";
+import { computed, Injectable, signal } from "@angular/core";
 import { sign } from "fake-jwt-sign";
-import { Subject } from "rxjs";
-import { AuthProvider } from "./auth.model";
+import { connect } from "ngxtension/connect";
+import { map, merge, Subject } from "rxjs";
+import { AuthProvider, Credentials } from "./auth.model";
+
+interface AuthInMemoryState {
+  token: string | null;
+}
 
 @Injectable({ providedIn: "root" })
 export class AuthProviderInMemory implements AuthProvider {
-  private readonly _token$ = new Subject<string | null>();
-  readonly token$ = this._token$.asObservable();
+  // sources
+  readonly login$ = new Subject<Credentials>();
+  readonly logout$ = new Subject<null>();
 
-  async login(email: string, _password: string) {
+  private readonly token$ = merge(
+    this.logout$,
+    this.login$.pipe(map(({ email, password }) => this.login(email, password))),
+  );
+
+  // state
+  private readonly state = signal<AuthInMemoryState>({
+    token: null,
+  });
+
+  // selectors
+  token = computed(() => this.state().token);
+
+  constructor() {
+    connect(this.state).with(this.token$, (state, token) => ({
+      ...state,
+      token,
+    }));
+  }
+
+  private login(email: string, _password: string) {
     if (!email.toLowerCase().endsWith("@test.com")) {
       throw new Error("Invalid email.");
     }
@@ -18,17 +44,10 @@ export class AuthProviderInMemory implements AuthProvider {
       _userRoles: this.defaultUser._roles,
     };
 
-    const accessToken = sign(authPayload, "secret", {
+    return sign(authPayload, "secret", {
       expiresIn: "1h",
       algorithm: "none",
     });
-
-    this._token$.next(accessToken);
-    return accessToken;
-  }
-
-  async logout() {
-    this._token$.next(null);
   }
 
   private readonly defaultUser = {
