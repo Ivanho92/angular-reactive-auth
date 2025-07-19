@@ -2,13 +2,13 @@
 // `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
 
-export enum AuthProvider {
+export enum AuthProviderEnum {
   InMemory = 'in-memory'
 }
 
 export const environment = {
   production: false,
-  authProvider: AuthProvider.InMemory
+  authProvider: AuthProviderEnum.InMemory
 };
 
 /*

@@ -1,30 +1,25 @@
-// export declare interface AuthUser {
-//   readonly user: UserInfo;
-//   readonly metadata: UserMetadata;
-//
-//   getToken(): Promise<string>;
-//   refreshToken(): Promise<void>;
-//   delete(): Promise<void>;
-// }
+import { JwtPayload } from "jwt-decode";
+import { Observable } from "rxjs";
 
-export declare interface AuthUser {
-  readonly id: string;
-  readonly displayName: string | null;
-  readonly email: string | null;
-  readonly metadata?: UserMetadata;
-}
-
-export declare interface UserMetadata {
-  readonly createdAt?: string;
-  readonly lastSignInTime?: string;
-}
+export type UserRole = "manager" | "admin";
 
 export interface AuthProvider {
-  login(email: string, _password: string): Promise<void>;
+  token$: Observable<string | null>;
+  login(email: string, _password: string): Promise<string>;
   logout(): Promise<void>;
 }
 
 export interface Credentials {
-  email: string,
-  password: string
+  email: string;
+  password: string;
+}
+
+export interface AuthPayload extends JwtPayload {
+  _userId: string;
+  _userRoles: UserRole[];
+}
+
+export interface User {
+  readonly displayName: string;
+  readonly email: string;
 }
