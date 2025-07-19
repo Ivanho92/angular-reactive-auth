@@ -1,4 +1,5 @@
-import { Component } from "@angular/core";
+import { JsonPipe } from "@angular/common";
+import { Component, inject } from "@angular/core";
 import { MatButtonModule } from "@angular/material/button";
 import { MatIconModule, MatIconRegistry } from "@angular/material/icon";
 import { MatToolbarModule } from "@angular/material/toolbar";
@@ -6,10 +7,13 @@ import { MatTooltip } from "@angular/material/tooltip";
 import { DomSanitizer } from "@angular/platform-browser";
 import { RouterLink, RouterOutlet } from "@angular/router";
 import { FlexModule } from "@ngbracket/ngx-layout/flex";
+import { AuthService } from "./auth/auth.service";
 
 @Component({
   selector: "app-root",
   template: `
+    <pre>{{ authService.state() | json }}</pre>
+    
     <div class="dark-theme">
       <mat-toolbar color="primary" fxLayoutGap="8px">
 <!--        <button mat-icon-button><mat-icon>menu</mat-icon></button>-->
@@ -51,9 +55,12 @@ import { FlexModule } from "@ngbracket/ngx-layout/flex";
     MatToolbarModule,
     MatButtonModule,
     MatTooltip,
-  ],
+    JsonPipe
+  ]
 })
 export class AppComponent {
+  protected readonly authService = inject(AuthService);
+
   constructor(iconRegistry: MatIconRegistry, sanitizer: DomSanitizer) {
     iconRegistry.addSvgIcon(
       "lemon",
