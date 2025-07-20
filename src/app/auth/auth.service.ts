@@ -2,8 +2,10 @@ import { computed, inject, Injectable, signal } from "@angular/core";
 import { toObservable } from "@angular/core/rxjs-interop";
 import { jwtDecode } from "jwt-decode";
 import { connect } from "ngxtension/connect";
+import { from } from "rxjs";
 import { AUTH_PROVIDER } from "../common/injection-tokens";
-import { AuthPayload, UserRole } from "./auth.model";
+import { UserRole } from "../user/user.model";
+import { AuthPayload } from "./auth.model";
 
 interface AuthState {
   userId: string | null;
@@ -23,7 +25,7 @@ export class AuthService {
   private readonly token$ = toObservable(this.authProvider.token);
 
   // state
-  readonly state = signal<AuthState>(DEFAULT_STATE);
+  private readonly state = signal<AuthState>(DEFAULT_STATE);
 
   // selectors
   isAuthenticated = computed(() => !!this.state().userId);
@@ -31,17 +33,17 @@ export class AuthService {
   userRoles = computed(() => this.state().userRoles);
 
   constructor() {
-    connect(this.state).with(this.token$, (state, token) =>
+    connect(this.state).with(this.token$, (_, token) =>
       this.decodeToken(token),
     );
   }
 
   login(email: string, password: string) {
-    return this.authProvider.login$.next({ email, password });
+    return from(this.authProvider.login(email, password));
   }
 
   logout() {
-    this.authProvider.logout$.next(null);
+    void this.authProvider.logout();
   }
 
   hasRole(role: UserRole) {

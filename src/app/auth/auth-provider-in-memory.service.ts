@@ -1,9 +1,9 @@
 import { computed, effect, inject, Injectable, signal } from "@angular/core";
 import { sign } from "fake-jwt-sign";
 import { connect } from "ngxtension/connect";
-import { map, merge, Subject } from "rxjs";
+import { Subject } from "rxjs";
 import { CacheService } from "../common/cache.service";
-import { AuthProvider, Credentials } from "./auth.model";
+import { AuthProvider } from "./auth.model";
 import { IN_MEMORY_USERS } from "./in-memory-users";
 
 interface AuthInMemoryState {
@@ -17,13 +17,7 @@ export class AuthProviderInMemory implements AuthProvider {
   private readonly cache = inject(CacheService);
 
   // sources
-  readonly login$ = new Subject<Credentials>();
-  readonly logout$ = new Subject<null>();
-
-  private readonly token$ = merge(
-    this.logout$,
-    this.login$.pipe(map(({ email, password }) => this.login(email, password))),
-  );
+  private readonly token$ = new Subject<string | null>();
 
   // state
   private readonly state = signal<AuthInMemoryState>({
@@ -34,6 +28,7 @@ export class AuthProviderInMemory implements AuthProvider {
   token = computed(() => this.state().token);
 
   constructor() {
+    // reducers
     connect(this.state).with(this.token$, (state, token) => ({
       ...state,
       token,
@@ -47,7 +42,8 @@ export class AuthProviderInMemory implements AuthProvider {
     });
   }
 
-  private login(email: string, password: string) {
+  // interface implementations
+  async login(email: string, password: string) {
     const mockUser = this.getMockUser(email, password)!;
 
     if (!mockUser) {
@@ -59,13 +55,22 @@ export class AuthProviderInMemory implements AuthProvider {
       _userRoles: mockUser._roles,
     };
 
-    return sign(authPayload, "secret", {
+    const token = sign(authPayload, "secret", {
       expiresIn: "1h",
       algorithm: "none",
     });
+
+    this.token$.next(token);
   }
 
+  async logout() {
+    this.token$.next(null);
+  }
+
+  // private methods
   private getMockUser(email: string, password: string) {
-    return IN_MEMORY_USERS.find(user => user.email === email && user.password === password)
+    return IN_MEMORY_USERS.find(
+      (user) => user.email === email && user.password === password,
+    );
   }
 }

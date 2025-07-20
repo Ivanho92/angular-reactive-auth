@@ -1,7 +1,9 @@
 import { computed, inject, Injectable, signal } from "@angular/core";
 import { connect } from "ngxtension/connect";
-import { map, Subject } from "rxjs";
-import { Credentials } from "./auth.model";
+import { EMPTY, Subject } from "rxjs";
+import { catchError, switchMap } from "rxjs/operators";
+import { ToastService } from "../common/toast.service";
+import { AuthCredentials } from "./auth.model";
 import { AuthService } from "./auth.service";
 
 export type LoginStatus = "pending" | "authenticating" | "success" | "error";
@@ -13,14 +15,20 @@ interface LoginState {
 @Injectable()
 export class LoginService {
   private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
 
   // sources
-  error$ = new Subject<any>();
-  login$ = new Subject<Credentials>();
+  error$ = new Subject<unknown>();
+  login$ = new Subject<AuthCredentials>();
 
-  userAuthenticated$ = this.login$.pipe(
-    map((credentials) =>
-      this.authService.login(credentials.email, credentials.password),
+  authenticated$ = this.login$.pipe(
+    switchMap(([email, password]) =>
+      this.authService.login(email, password).pipe(
+        catchError((error) => {
+          this.error$.next(error);
+          return EMPTY;
+        }),
+      ),
     ),
   );
 
@@ -35,8 +43,11 @@ export class LoginService {
   constructor() {
     // reducers
     connect(this.state)
-      .with(this.userAuthenticated$, () => ({ status: "success" }))
+      .with(this.authenticated$, () => ({ status: "success" }))
       .with(this.login$, () => ({ status: "authenticating" }))
-      .with(this.error$, () => ({ status: "error" }));
+      .with(this.error$, (_, error) => {
+        this.toastService.openSnackBar((error as Error).message);
+        return { status: "error" };
+      });
   }
 }

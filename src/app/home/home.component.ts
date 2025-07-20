@@ -17,9 +17,8 @@ import { LoginService } from "../auth/login.service";
     @if (!this.authService.isAuthenticated()) {
       <div fxLayout="column" fxLayoutAlign="center center">
         <span class="mat-headline-3">Hello, Limoncu!</span>
-        <!--        (click)="loginService.login$.next({ email: 'test@test.com', password: 'test' })"-->
         <button
-          (click)="authService.login('john.doe@manager.com', 'password')"
+          (click)="loginService.login$.next(['john.doe@manager.com', 'password'])"
           mat-raised-button
           color="primary"
         >
@@ -34,7 +33,7 @@ import { LoginService } from "../auth/login.service";
   providers: [LoginService],
 })
 export class HomeComponent {
-  // protected readonly loginService = inject(LoginService);
+  protected readonly loginService = inject(LoginService);
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 

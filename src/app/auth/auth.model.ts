@@ -1,28 +1,16 @@
 import { Signal } from "@angular/core";
 import { JwtPayload } from "jwt-decode";
-import { Subject } from "rxjs";
+import { UserRole } from "../user/user.model";
 
-export type UserRole = "manager" | "admin";
+export type AuthCredentials = [email: string, password: string];
 
 export interface AuthProvider {
-  login$: Subject<Credentials>;
-  logout$: Subject<null>;
+  login(email: string, password: string): Promise<void>;
+  logout(): Promise<void>;
   token: Signal<string | null>;
-}
-
-export interface Credentials {
-  email: string;
-  password: string;
 }
 
 export interface AuthPayload extends JwtPayload {
   _userId: string;
   _userRoles: UserRole[];
-}
-
-export interface User {
-  readonly _id: string;
-  readonly _roles: UserRole[];
-  readonly displayName: string;
-  readonly email: string;
 }

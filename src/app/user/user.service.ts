@@ -3,9 +3,9 @@ import { toObservable } from "@angular/core/rxjs-interop";
 import { connect } from "ngxtension/connect";
 import { of } from "rxjs";
 import { switchMap } from "rxjs/operators";
-import { User } from "../auth/auth.model";
 import { AuthService } from "../auth/auth.service";
 import { IN_MEMORY_USERS } from "../auth/in-memory-users";
+import { User } from "./user.model";
 
 interface UserState {
   user: User | null;
@@ -15,29 +15,30 @@ interface UserState {
 export class UserService {
   private readonly auth = inject(AuthService);
 
-  // State
-  public readonly state = signal<UserState>({
+  // state
+  private readonly state = signal<UserState>({
     user: null,
   });
 
-  // Selectors
+  // selectors
   user = computed(() => this.state().user);
 
-  // Sources
+  // sources
   authChanged$ = toObservable(this.auth.userId).pipe(
     switchMap(this.fetchUserById),
   );
 
   constructor() {
-    // Reducers
+    // reducers
     connect(this.state).with(this.authChanged$, (state, user) => ({
       ...state,
       user,
     }));
   }
 
+  // private methods
   private fetchUserById(userId: string | null) {
     if (!userId) return of(null);
-    return of(IN_MEMORY_USERS.find(user => user._id === userId)! as User);
+    return of(IN_MEMORY_USERS.find((user) => user._id === userId)! as User);
   }
 }

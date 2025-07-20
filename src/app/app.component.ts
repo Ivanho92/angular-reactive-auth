@@ -21,12 +21,12 @@ import { UserService } from "./user/user.service";
   styles: ``,
   imports: [
     FlexModule,
-    RouterOutlet,
+    HeaderComponent,
+    MatButtonModule,
     MatIconModule,
     MatToolbarModule,
-    MatButtonModule,
-    HeaderComponent,
-  ],
+    RouterOutlet,
+  ]
 })
 export class AppComponent {
   protected readonly userService = inject(UserService);
