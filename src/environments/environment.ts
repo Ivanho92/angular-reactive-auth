@@ -8,7 +8,8 @@ export enum AuthProviderEnum {
 
 export const environment = {
   production: false,
-  authProvider: AuthProviderEnum.InMemory
+  authProvider: AuthProviderEnum.InMemory,
+  baseUrl: 'http://localhost:4200',
 };
 
 /*

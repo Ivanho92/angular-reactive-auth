@@ -50,6 +50,10 @@ export class AuthService {
     return this.userRoles().includes(role);
   }
 
+  getToken() {
+    return this.authProvider.token();
+  }
+
   decodeToken(token: string | null) {
     if (!token) return DEFAULT_STATE;
 
