@@ -5,6 +5,7 @@ import { of } from "rxjs";
 import { switchMap } from "rxjs/operators";
 import { User } from "../auth/auth.model";
 import { AuthService } from "../auth/auth.service";
+import { IN_MEMORY_USERS } from "../auth/in-memory-users";
 
 interface UserState {
   user: User | null;
@@ -15,7 +16,7 @@ export class UserService {
   private readonly auth = inject(AuthService);
 
   // State
-  private readonly state = signal<UserState>({
+  public readonly state = signal<UserState>({
     user: null,
   });
 
@@ -24,7 +25,7 @@ export class UserService {
 
   // Sources
   authChanged$ = toObservable(this.auth.userId).pipe(
-    switchMap(this.getUserById),
+    switchMap(this.fetchUserById),
   );
 
   constructor() {
@@ -35,13 +36,8 @@ export class UserService {
     }));
   }
 
-  private getUserById(userId: string | null) {
+  private fetchUserById(userId: string | null) {
     if (!userId) return of(null);
-    return of({
-      _userId: userId,
-      _userRoles: ["manager"],
-      displayName: "John Doe",
-      email: "john.doe@email.com",
-    } as User);
+    return of(IN_MEMORY_USERS.find(user => user._id === userId)! as User);
   }
 }

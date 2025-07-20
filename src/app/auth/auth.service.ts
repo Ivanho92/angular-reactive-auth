@@ -26,6 +26,7 @@ export class AuthService {
   readonly state = signal<AuthState>(DEFAULT_STATE);
 
   // selectors
+  isAuthenticated = computed(() => !!this.state().userId);
   userId = computed(() => this.state().userId);
   userRoles = computed(() => this.state().userRoles);
 

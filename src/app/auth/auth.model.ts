@@ -21,6 +21,8 @@ export interface AuthPayload extends JwtPayload {
 }
 
 export interface User {
+  readonly _id: string;
+  readonly _roles: UserRole[];
   readonly displayName: string;
   readonly email: string;
 }
