@@ -44,6 +44,10 @@ export class AuthService {
     this.authProvider.logout$.next(null);
   }
 
+  hasRole(role: UserRole) {
+    return this.userRoles().includes(role);
+  }
+
   decodeToken(token: string | null) {
     if (!token) return DEFAULT_STATE;
 
